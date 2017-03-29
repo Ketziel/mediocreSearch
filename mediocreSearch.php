@@ -1,12 +1,15 @@
 <?php
+/* Plugin Settings */
 $parent = 2;
 $start = round(microtime(true) * 1000);
-$fields = 'pagetitle,description,TV.source';
+$fields = 'pagetitle,TV.baseEnchantment,description,TV.powers>effect';
 $fieldsArray = explode(',',$fields);
 $array = array();
-$searchQuery = 'crossbow';
-$filters = array('template:==' => 13,'TV.gold:>' => 100000);
+$filters = array('template:==' => 13,'TV.gold:>' => 1000);
 $GLOBALS['searchItemCount'] = 0;
+
+/* POST Variables */
+$searchQuery = $_GET['search'];
 
 function fetchData($modx, $stack, $parentID, $fields, $search, $filters){
     $theData = $modx->getIterator('modResource', array('parent' => $parentID));
@@ -76,7 +79,35 @@ function rankResource($modx, $obj, $fields, $query){
 	foreach ($fields as $idx => $field) {
 	   if($field != '' && $field != ' ' && $field != null){
             if(substr($field, 0, 3) == 'TV.'){
-                $focusField = $obj->getTVValue(substr($field, 3));
+				if (strpos($field, '>') !== false) {
+					//echo($field);
+					//echo '<br/>';
+					$focusField = '';
+					$f =  explode('>',$field);
+					
+					$json = json_decode($obj->getTVValue(substr($f[0], 3)), true);
+					
+					$focusField = migxString($modx, $json, $f, 1);
+					
+					/*foreach ($json as $idx => $item) {
+						echo $item->{'effect'};
+						echo '<br/><br/>';
+					}*/
+					/*var_dump($json[0]);
+					
+					
+					if ($json != null){
+						for ($i = 1; $i < count($f); $i++){
+							if ($i == (count($f) - 1)){
+								$focusField = $focusField.' || '.$json[$f[$i]];
+							} else {
+								$json = json_decode($json[$f[$i]], true);
+							}
+						}						
+					}*/
+				} else {
+					$focusField = $obj->getTVValue(substr($field, 3));
+				}
             } else {
                 $focusField = $obj->get($field);
             }
@@ -122,6 +153,20 @@ function rankResource($modx, $obj, $fields, $query){
         return false;
     }
 
+}
+
+function migxString($modx, $json, $f, $depth, $focusField = ''){
+	if ($json != null){
+		foreach ($json as $idx => $item) {
+			if ($depth == (count($f) - 1)){
+				$focusField  = ($focusField == '') ? ('') : ($focusField.' || ');
+				$focusField = $focusField.$item[$f[$depth]];
+			} else {
+				$focusField = migxString($modx, json_decode($item[$f[$depth]], true), $f, $depth+1, $focusField);
+			}
+		}
+	}
+	return $focusField;
 }
 
 function doublePoints($field, $text){
