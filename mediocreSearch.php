@@ -1,15 +1,74 @@
 <?php
+/* Required Functions */
+if (!function_exists('toHex')) {
+	function toHex($str) {
+		return array_shift( unpack('H*', $str) );
+	}
+}
+
+if (!function_exists('toStr')) {
+	function toStr($hex) {
+		return  pack('H*', $hex);
+	}
+}
+
 /* Plugin Settings */
 $parent = 2;
 $start = round(microtime(true) * 1000);
 $fields = 'pagetitle,TV.baseEnchantment,description,TV.powers>effect';
 $fieldsArray = explode(',',$fields);
 $array = array();
-$filters = array('template:==' => 13,'TV.gold:>' => 1000);
+$filters = array('template:==' => 13);
 $GLOBALS['searchItemCount'] = 0;
+
 
 /* POST Variables */
 $searchQuery = $_GET['search'];
+$searchQuery = str_replace('+',' ',$_GET['search']);
+$filters = buildFilterArray($filters);
+
+//var_dump($_GET);
+/*
+
+    foreach ($filters as $idx => $filter) {
+
+			$x = array_shift( unpack('H*', $idx) );
+			$y = pack('H*', $x);
+
+			echo $x;
+			echo '<br/>';
+			echo $y;
+			echo '<br/>';
+	}*/
+
+
+
+function buildFilterArray($filters){
+
+	//template$eq$13,tv.gold$gte$1000
+	$queryArray = $_GET;
+	foreach($queryArray as $query => $val){
+		if(is_array($val) && $query){
+			$strVal = '';
+			foreach($val as $v){
+				if ($strVal != ''){
+					$strVal = $strVal.',';
+				}
+				$strVal = $strVal.$v;
+			}
+		}
+		if (!array_key_exists(toStr($query),$filters)){
+			$filters[toStr($query)] = $strVal;
+		} else {
+			$filters[toStr($query)] = $filters[toStr($query)].','.$strVal;
+		}
+	}
+	
+	return $filters;
+}
+
+
+
 
 function fetchData($modx, $stack, $parentID, $fields, $search, $filters){
     $theData = $modx->getIterator('modResource', array('parent' => $parentID));
@@ -43,22 +102,23 @@ function checkFilters($modx, $obj, $filters){
 
                 switch ($filter[1]) {
                     case '==':
-                        $valid = ($field == $val);
+                        //$valid = ($field == $val);
+						$valid = checkFilter(function ($f, $v) {return ($f == $v);}, $field,$val);
                         break;
                     case '>':
-                        $valid = ($field > $val);        
+                        $valid = checkFilter(function ($f, $v) {return ($f > $v);}, $field,$val);
                         break;
                     case '<':
-                        $valid = ($field < $val);        
+                        $valid = checkFilter(function ($f, $v) {return ($f < $v);}, $field,$val);
                         break;
                     case '>=':
-                        $valid = ($field >= $val);        
+                        $valid = checkFilter(function ($f, $v) {return ($f >= $v);}, $field,$val);
                         break;
                     case '<=':
-                        $valid = ($field <= $val);        
+                        $valid = checkFilter(function ($f, $v) {return ($f <= $v);}, $field,$val);
                         break;
                     default:
-                        $valid = ($field == $val);
+                        $valid = checkFilter(function ($f, $v) {return ($f == $v);}, $field,$val);
                 }
 
             }
@@ -69,6 +129,33 @@ function checkFilters($modx, $obj, $filters){
     
     //echo $obj->get('template').'<br/>';
     return $valid;
+}
+
+function checkFilter($compare, $field, $val){
+						
+	if (stripos($val,',') !== false){
+		$match = 0;
+		$valArr = explode(',',(string)$val);
+		foreach($valArr as $va){
+			if (is_numeric($va)){
+				if ($compare($field, (int)$va) == 1){
+						$match = 1;
+				}
+			} else {
+				if ($compare($field, $va) == 1){
+						
+						$match = 1;
+				}
+			}
+		}
+		return $match;
+	} else {
+		if (is_numeric($val)){
+			return $compare($field, (int)$val);
+		} else {
+			return $compare($field, $val);
+		}
+	}
 }
 
 function rankResource($modx, $obj, $fields, $query){
