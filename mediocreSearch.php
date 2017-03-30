@@ -160,77 +160,83 @@ function checkFilter($compare, $field, $val){
 
 function rankResource($modx, $obj, $fields, $query){
 	
-	$rank = 0;
-	$fieldsSize = count($fields);
-	$queryArray = explode(' ',$query);
-	foreach ($fields as $idx => $field) {
-	   if($field != '' && $field != ' ' && $field != null){
-            if(substr($field, 0, 3) == 'TV.'){
-				if (strpos($field, '>') !== false) {
-					//echo($field);
-					//echo '<br/>';
-					$focusField = '';
-					$f =  explode('>',$field);
-					
-					$json = json_decode($obj->getTVValue(substr($f[0], 3)), true);
-					
-					$focusField = migxString($modx, $json, $f, 1);
-					
-					/*foreach ($json as $idx => $item) {
-						echo $item->{'effect'};
-						echo '<br/><br/>';
-					}*/
-					/*var_dump($json[0]);
-					
-					
-					if ($json != null){
-						for ($i = 1; $i < count($f); $i++){
-							if ($i == (count($f) - 1)){
-								$focusField = $focusField.' || '.$json[$f[$i]];
-							} else {
-								$json = json_decode($json[$f[$i]], true);
-							}
-						}						
-					}*/
+	if ($query == ''){
+		$rank = 1;
+	} else {
+		$rank = 0;
+		$fieldsSize = count($fields);
+		$queryArray = explode(' ',$query);
+		foreach ($fields as $idx => $field) {
+		   if($field != '' && $field != ' ' && $field != null){
+				if(substr($field, 0, 3) == 'TV.'){
+					if (strpos($field, '>') !== false) {
+						//echo($field);
+						//echo '<br/>';
+						$focusField = '';
+						$f =  explode('>',$field);
+						
+						$json = json_decode($obj->getTVValue(substr($f[0], 3)), true);
+						
+						$focusField = migxString($modx, $json, $f, 1);
+						
+						/*foreach ($json as $idx => $item) {
+							echo $item->{'effect'};
+							echo '<br/><br/>';
+						}*/
+						/*var_dump($json[0]);
+						
+						
+						if ($json != null){
+							for ($i = 1; $i < count($f); $i++){
+								if ($i == (count($f) - 1)){
+									$focusField = $focusField.' || '.$json[$f[$i]];
+								} else {
+									$json = json_decode($json[$f[$i]], true);
+								}
+							}						
+						}*/
+					} else {
+						$focusField = $obj->getTVValue(substr($field, 3));
+					}
 				} else {
-					$focusField = $obj->getTVValue(substr($field, 3));
+					$focusField = $obj->get($field);
 				}
-            } else {
-                $focusField = $obj->get($field);
-            }
-            $fieldIdx = $idx;
-            $matchCount = 0;
+				$fieldIdx = $idx;
+				$matchCount = 0;
 
-            if (stripos($focusField, $query) !== false) {
-                if (doublePoints($focusField, $query) == true){
-                    $rank = $rank + ((($fieldsSize - $idx) * $fieldsSize * count($queryArray))*2);
-                } else {
-                    $rank = $rank + (($fieldsSize - $idx) * $fieldsSize * count($queryArray));
-                }
-            } else {
-                foreach ($queryArray as $idx => $text) {
-                    //$stringPosStart = stripos($focusField, $text);
+				if (stripos($focusField, $query) !== false) {
+					if (doublePoints($focusField, $query) == true){
+						$rank = $rank + ((($fieldsSize - $idx) * $fieldsSize * count($queryArray))*2);
+					} else {
+						$rank = $rank + (($fieldsSize - $idx) * $fieldsSize * count($queryArray));
+					}
+				} else {
+					foreach ($queryArray as $idx => $text) {
+						//$stringPosStart = stripos($focusField, $text);
 
 
-                    if (stripos($focusField, $text) !== false) {
-                        $foundCount++;
-                        /*$stringPosEnd = stripos($focusField, $text) + strlen($text) - 1;
-                        $startChar = substr($focusField,$stringPosStart, 1);
-                        $endChar = substr($focusField,$stringPosEnd, 1);
-                        $leftChar = substr($focusField,$stringPosStart - 1, 1);
-                        $rightChar = substr($focusField,$stringPosEnd + 1, 1);*/
+						if (stripos($focusField, $text) !== false) {
+							$foundCount++;
+							/*$stringPosEnd = stripos($focusField, $text) + strlen($text) - 1;
+							$startChar = substr($focusField,$stringPosStart, 1);
+							$endChar = substr($focusField,$stringPosEnd, 1);
+							$leftChar = substr($focusField,$stringPosStart - 1, 1);
+							$rightChar = substr($focusField,$stringPosEnd + 1, 1);*/
 
-                        if (doublePoints($focusField, $text) == true){
-                            $rank = $rank + (($foundCount + $fieldsSize - $fieldIdx)*2);
-                        } else {
-                            $rank = $rank + ($foundCount + $fieldsSize - $fieldIdx);
-                        }
-                    }
-                }
-           }
-       }
+							if (doublePoints($focusField, $text) == true){
+								$rank = $rank + (($foundCount + $fieldsSize - $fieldIdx)*2);
+							} else {
+								$rank = $rank + ($foundCount + $fieldsSize - $fieldIdx);
+							}
+						}
+					}
+			   }
+		   }
 
-    }
+		}
+		
+	}
+	
 
     if($rank > 0){
 //echo $focusField.':'.$rank.'<br/>';
