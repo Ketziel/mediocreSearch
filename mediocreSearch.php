@@ -13,14 +13,13 @@ if (!function_exists('toStr')) {
 }
 
 /* Plugin Settings */
-$parent = 2;
-$start = round(microtime(true) * 1000);
-$fields = 'pagetitle,TV.baseEnchantment,description,TV.powers>effect';
+$parent = $modx->getOption('parent', $scriptProperties, 1);
+$fields = $modx->getOption('fields', $scriptProperties, 'pagetitle,content');
 $fieldsArray = explode(',',$fields);
 $array = array();
-$filters = array('template:==' => 13);
+$filters = json_decode($modx->getOption('filters', $scriptProperties, '{}'), true);
 $GLOBALS['searchItemCount'] = 0;
-
+$start = round(microtime(true) * 1000);
 
 /* POST Variables */
 $searchQuery = $_GET['search'];
