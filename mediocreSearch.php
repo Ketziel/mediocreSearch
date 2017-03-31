@@ -116,6 +116,9 @@ function checkFilters($modx, $obj, $filters){
                     case '<=':
                         $valid = checkFilter(function ($f, $v) {return ($f <= $v);}, $field,$val);
                         break;
+                    case 'contains':
+						$valid = checkFilter(function ($f, $v) {return strpos($f, $v) !== false;}, $field,$val);
+                        break;
                     default:
                         $valid = checkFilter(function ($f, $v) {return ($f == $v);}, $field,$val);
                 }
