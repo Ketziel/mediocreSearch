@@ -6,7 +6,9 @@ $min = $modx->getOption('min', $scriptProperties, "");
 $max = $modx->getOption('max', $scriptProperties, "");
 $value = $modx->getOption('value', $scriptProperties, "");
 $condition = $modx->getOption('condition', $scriptProperties, "invalid-condition");
-
+$label = $modx->getOption('label', $scriptProperties, "");
+$labelBefore = $modx->getOption('labelBefore', $scriptProperties, false);
+$labelAfter = $modx->getOption('labelAfter', $scriptProperties, false);
 
 if (!function_exists('toHex')) {
 	function toHex($str) {
@@ -20,8 +22,11 @@ if (!function_exists('toStr')) {
 	}
 }
 
+if ($id == ''){
+	$id = toHex($condition);
+}
 
-$output = '<input type="'.$type.'" id='.$id.'"" class="mediocre-filter '.$classes.'" name="'.toHex($condition).'[]" value="'.$value.'"';
+$output = '<input type="'.$type.'" id="'.$id.toHex($value).'" class="mediocre-filter '.$classes.'" name="'.toHex($condition).'[]" value="'.$value.'"';
 
 if ($min != '') {$output = $output.' min="'.$min.'"';}
 if ($max != '') {$output = $output.' max="'.$max.'"';}
@@ -36,5 +41,14 @@ if ($type == "checkbox"){
 }
 
 $output = $output.'>';
+
+$label = '<label for="'.$id.toHex($value).'">'.$label.'</label>';
+
+if ($labelBefore == true){
+	$output = $label.$output;
+}
+if ($labelAfter == true){
+	$output = $output.$label;
+}
 
 return $output;
