@@ -171,39 +171,37 @@ function rankResource($modx, $obj, $fields, $query){
 		$queryArray = explode(' ',$query);
 		foreach ($fields as $idx => $field) {
 		   if($field != '' && $field != ' ' && $field != null){
+				
+				$outputFilter = '';
+				if (strpos($field, ':') !== false) {
+				   $temp = explode(':',$field);
+				   $field = $temp[0];
+				   $outputFilter  = $temp[1];
+				 //  echo $field.':'.$outputFilter.'<br/>';
+				}
+			   
 				if(substr($field, 0, 3) == 'TV.'){
 					if (strpos($field, '>') !== false) {
-						//echo($field);
-						//echo '<br/>';
 						$focusField = '';
 						$f =  explode('>',$field);
 						
 						$json = json_decode($obj->getTVValue(substr($f[0], 3)), true);
 						
 						$focusField = migxString($modx, $json, $f, 1);
-						
-						/*foreach ($json as $idx => $item) {
-							echo $item->{'effect'};
-							echo '<br/><br/>';
-						}*/
-						/*var_dump($json[0]);
-						
-						
-						if ($json != null){
-							for ($i = 1; $i < count($f); $i++){
-								if ($i == (count($f) - 1)){
-									$focusField = $focusField.' || '.$json[$f[$i]];
-								} else {
-									$json = json_decode($json[$f[$i]], true);
-								}
-							}						
-						}*/
 					} else {
 						$focusField = $obj->getTVValue(substr($field, 3));
 					}
 				} else {
 					$focusField = $obj->get($field);
 				}
+				
+				if ($outputFilter != ''){
+					$focusField = $modx->runSnippet($outputFilter,array(
+					   'input' => $focusField
+					));
+					//echo $field.':'.$outputFilter.'<br/>';
+				}
+				
 				$fieldIdx = $idx;
 				$matchCount = 0;
 
@@ -215,16 +213,9 @@ function rankResource($modx, $obj, $fields, $query){
 					}
 				} else {
 					foreach ($queryArray as $idx => $text) {
-						//$stringPosStart = stripos($focusField, $text);
-
 
 						if (stripos($focusField, $text) !== false) {
 							$foundCount++;
-							/*$stringPosEnd = stripos($focusField, $text) + strlen($text) - 1;
-							$startChar = substr($focusField,$stringPosStart, 1);
-							$endChar = substr($focusField,$stringPosEnd, 1);
-							$leftChar = substr($focusField,$stringPosStart - 1, 1);
-							$rightChar = substr($focusField,$stringPosEnd + 1, 1);*/
 
 							if (doublePoints($focusField, $text) == true){
 								$rank = $rank + (($foundCount + $fieldsSize - $fieldIdx)*2);
@@ -234,6 +225,12 @@ function rankResource($modx, $obj, $fields, $query){
 						}
 					}
 			   }
+			   
+			   
+			   
+			   
+			   
+			   
 		   }
 
 		}
