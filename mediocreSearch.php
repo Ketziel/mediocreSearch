@@ -15,6 +15,7 @@ if (!function_exists('toStr')) {
 /* Plugin Settings */
 $parent = $modx->getOption('parent', $scriptProperties, 1);
 $fields = $modx->getOption('fields', $scriptProperties, 'pagetitle,content');
+$resultTpl = $modx->getOption('resultTpl', $scriptProperties, '');
 $fieldsArray = explode(',',$fields);
 $array = array();
 $filters = json_decode($modx->getOption('filters', $scriptProperties, '{}'), true);
@@ -303,8 +304,15 @@ echo ('<h1>Searching for : '.$searchQuery.'</h1>');
 echo ('<h2>Found '.count($results ).' results from '. $GLOBALS['searchItemCount'].' pages, in '.($end-$start).'milliseconds</h2>');
 
 
-//Test Output
+//Output
+$output ='';
 foreach ($results as $idx => $item) {
-        echo $idx.'. '.($item->get('pagetitle')).' (rank:'.($item->get('pagerank')).')';
-        echo '<br/><br/>';
+	$templateVars =& $item->getMany('TemplateVars');
+    foreach ($templateVars as $tvId => $templateVar) {
+        $tvs[$templateVar->get('name')] = $templateVar->get('value');
+    }
+
+	$output = $output.$modx->getChunk($resultTpl, array_merge($item->toArray(),$tvs));
 }
+
+return $output;
