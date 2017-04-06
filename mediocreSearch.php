@@ -16,6 +16,7 @@ if (!function_exists('toStr')) {
 $parent = $modx->getOption('parent', $scriptProperties, 1);
 $fields = $modx->getOption('fields', $scriptProperties, 'pagetitle,content');
 $resultTpl = $modx->getOption('resultTpl', $scriptProperties, '');
+$GLOBALS['mediocreSortOrder'] = json_decode($modx->getOption('sortby', $scriptProperties, '{"pagetitle":"ASC","menuindex":"DESC"}'), true);
 $fieldsArray = explode(',',$fields);
 $array = array();
 $filters = json_decode($modx->getOption('filters', $scriptProperties, '{}'), true);
@@ -285,10 +286,31 @@ function cmp($a, $b)
     $aRank = $a->get('pagerank');
     $bRank = $b->get('pagerank');
     if ($aRank == $bRank) {
+		foreach ($GLOBALS['mediocreSortOrder']  as $field => $order){
+			 if(substr($idx, 0, 3) == 'TV.'){
+				$aField = $a->getTVValue(substr($field, 3));
+				$bField = $b->getTVValue(substr($field, 3));
+			} else {
+				$aField = $a->get($field);
+				$bField = $b->get($field);
+			}
+			if ($aField != $bField){
+				if ($order == 'ASC'){
+					if (strcasecmp($aField, $bField) != 0){
+						return strcasecmp($aField, $bField);
+					} 
+				} else if ($order == 'DESC') {
+					if (strcasecmp($bField, $aField) != 0){
+						return strcasecmp($bField, $aField);
+					} 
+				}
+			}
+		}
         return 0;
     }
     return ($aRank > $bRank) ? -1 : 1;
 }
+
 
 //run search
 $results = fetchData($modx, $array, $parent, $fieldsArray, $searchQuery, $filters);
