@@ -13,15 +13,17 @@ if (!function_exists('toStr')) {
 }
 
 /* Plugin Settings */
+$start = round(microtime(true) * 1000);
 $parent = $modx->getOption('parent', $scriptProperties, 1);
 $fields = $modx->getOption('fields', $scriptProperties, 'pagetitle,content');
+$includeTVs = $modx->getOption('includeTVs', $scriptProperties, 1);
+$includeTVList = explode(',',$modx->getOption('includeTVList', $scriptProperties, ''));
 $resultTpl = $modx->getOption('resultTpl', $scriptProperties, '');
 $GLOBALS['mediocreSortOrder'] = json_decode($modx->getOption('sortby', $scriptProperties, '{"pagetitle":"ASC","menuindex":"DESC"}'), true);
 $fieldsArray = explode(',',$fields);
 $array = array();
 $filters = json_decode($modx->getOption('filters', $scriptProperties, '{}'), true);
 $GLOBALS['searchItemCount'] = 0;
-$start = round(microtime(true) * 1000);
 
 /* POST Variables */
 $searchQuery = $_GET['search'];
@@ -55,7 +57,7 @@ function buildFilterArray($filters){
 				if ($strVal != ''){
 					$strVal = $strVal.',';
 				}
-				$strVal = $strVal.$v;
+				$strVal = $strVal.toStr($v);
 			}
 		}
 		if (!array_key_exists(toStr($query),$filters)){
@@ -72,7 +74,7 @@ function buildFilterArray($filters){
 
 
 function fetchData($modx, $stack, $parentID, $fields, $search, $filters){
-    $theData = $modx->getIterator('modResource', array('parent' => $parentID));
+    $theData = $modx->getIterator('modResource', array('parent' => $parentID,'published' => true));
     foreach ($theData as $idx => $item) {
         $GLOBALS['searchItemCount'] = $GLOBALS['searchItemCount'] + 1;
         if(checkFilters($modx, $item, $filters) == true){
@@ -318,20 +320,46 @@ $results = fetchData($modx, $array, $parent, $fieldsArray, $searchQuery, $filter
 usort($results, "cmp");
 
 //Time Taken
-$end = round(microtime(true) * 1000);
-echo ('<h1>Searching for : '.$searchQuery.'</h1>');
-echo ('<h2>Found '.count($results ).' results from '. $GLOBALS['searchItemCount'].' pages, in '.($end-$start).'milliseconds</h2>');
+//$end = round(microtime(true) * 1000);
+//echo ('<h1>Searching for : '.$searchQuery.'</h1>');
+//echo ('<h2>Found '.count($results ).' results from '. $GLOBALS['searchItemCount'].' pages, in '.($end-$start).'milliseconds</h2>');
 
 
 //Output
 $output ='';
 foreach ($results as $idx => $item) {
-	$templateVars =& $item->getMany('TemplateVars');
-    foreach ($templateVars as $tvId => $templateVar) {
-        $tvs[$templateVar->get('name')] = $templateVar->get('value');
+    if ($includeTVs == 1){
+        //$output = $output.'<h1>'.count($includeTVList).' : '.$includeTVList[0].'</h1>';
+        if(count($includeTVList) != 1 && $includeTVList[0] != ''){
+            //$test = (string)$item->getTVValue("productType");
+            foreach ($includeTVList as $tvName) {
+                $tvs[$tvName] = (string)$item->getTVValue($tvName);
+                //$output = $output."<br/><div>".$item->getTVValue($tvName)."</div><br/><br/>";
+            }
+        } else {
+            $templateVars =& $item->getMany('TemplateVars');
+            foreach ($templateVars as $tvId => $templateVar) {
+                $tvs[$templateVar->get('name')] = $templateVar->get('value');
+            }
+        }
+    } else {
+        $tvs['noTV'] = "none";    
     }
+    //    $tvs['productType'] = "*144*";    
+    
+	
 
+    
 	$output = $output.$modx->getChunk($resultTpl, array_merge($item->toArray(),$tvs));
+	//$output = $output."<h2>".$item->toArray()['pagetitle']."</h2>";
+	//$output = $output.$modx->getChunk($resultTpl, array_merge($item->toArray(),new Array()));
+
 }
+
+
+//Time Taken
+$end = round(microtime(true) * 1000);
+echo ('<h1>Searching for : '.$searchQuery.'</h1>');
+echo ('<h2>Found '.count($results ).' results from '. $GLOBALS['searchItemCount'].' pages, in '.($end-$start).'milliseconds</h2>');
 
 return $output;

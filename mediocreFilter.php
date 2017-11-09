@@ -26,7 +26,7 @@ if ($id == ''){
 	$id = toHex($condition);
 }
 
-$output = '<input type="'.$type.'" id="'.$id.toHex($value).'" class="mediocre-filter '.$classes.'" name="'.toHex($condition).'[]" value="'.$value.'"';
+$output = '<input type="'.$type.'" id="'.$id.toHex($value).'" class="mediocre-filter '.$classes.'" name="'.toHex($condition).'[]" value="'.toHex($value).'"';
 
 if ($min != '') {$output = $output.' min="'.$min.'"';}
 if ($max != '') {$output = $output.' max="'.$max.'"';}
