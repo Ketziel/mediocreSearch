@@ -33,10 +33,13 @@ if ($max != '') {$output = $output.' max="'.$max.'"';}
 
 if ($type == "checkbox"){
 	$vars = $_GET[toHex($condition)];
-	foreach($vars as $var){
-		if ($var == $value){
-			$output = $output.' checked';
-		}
+	if ($vars != null){
+        foreach($vars as $var){
+    	    $output = $output.' data-'.$var.'="'.toHex($value).'"';
+    		if ($var == toHex($value)){
+    			$output = $output.' checked';
+    		}
+    	}
 	}
 }
 

@@ -51,20 +51,22 @@ function buildFilterArray($filters){
 	//template$eq$13,tv.gold$gte$1000
 	$queryArray = $_GET;
 	foreach($queryArray as $query => $val){
-		if(is_array($val) && $query){
-			$strVal = '';
-			foreach($val as $v){
-				if ($strVal != ''){
-					$strVal = $strVal.',';
-				}
-				$strVal = $strVal.toStr($v);
-			}
-		}
-		if (!array_key_exists(toStr($query),$filters)){
-			$filters[toStr($query)] = $strVal;
-		} else {
-			$filters[toStr($query)] = $filters[toStr($query)].','.$strVal;
-		}
+	    if ($query != 'search' && $query != 'q') {
+    		if(is_array($val) && $query){
+    			$strVal = '';
+    			foreach($val as $v){
+    				if ($strVal != ''){
+    					$strVal = $strVal.',';
+    				}
+    				$strVal = $strVal.toStr($v);
+    			}
+    		}
+    		if (!array_key_exists(toStr($query),$filters)){
+    			$filters[toStr($query)] = $strVal;
+    		} else {
+    			$filters[toStr($query)] = $filters[toStr($query)].','.$strVal;
+    		}
+	    }
 	}
 	
 	return $filters;
