@@ -359,7 +359,10 @@ foreach ($results as $idx => $item) {
 
 //Time Taken
 $end = round(microtime(true) * 1000);
-echo ('<h1>Searching for : '.$searchQuery.'</h1>');
-echo ('<h2>Found '.count($results ).' results from '. $GLOBALS['searchItemCount'].' pages, in '.($end-$start).'milliseconds</h2>');
+//echo ('<h1>Searching for : '.$searchQuery.'</h1>');
+echo ('<h2 style="font-size: .75em;">Found '.count($results ).' results from '. $GLOBALS['searchItemCount'].' pages, in '.($end-$start).'milliseconds</h2>');
 
-return $output;
+$modx->setPlaceholder('mediocreResults',$output);
+$modx->setPlaceholder('mediocreQuery',$searchQuery);
+
+//return $output;

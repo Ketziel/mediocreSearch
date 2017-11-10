@@ -48,6 +48,15 @@ Nested Migx variables are also searchable. To do this, just continue to seperate
 
 #### Output Content
 
+When the mediocreSearch snippet is ran, a number of placeholders are generated. These placeholders can be used to build up the layout of the search page. The following is a list of those placeholders.
+
+| Placeholder | Description |
+|-------------|-------------|
+| mediocreResults |Contains the processed output of all search results. |
+| mediocreQuery |Contains the current search query - allows you to retain the search inputs vbalue after a page refresh. |
+
+##### Results
+
 Chunks are used to create the HTML structure of each returned search result. Any resource option or template variable can be used here. 
 
 In addition, the following variables are also parsed to the chunk for use.
