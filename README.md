@@ -101,6 +101,16 @@ A simple output chunk would be as follows:
 </div>
 ```
 
+In order to display these results, you ***must remember*** to output them using the **mediocreResults** placeholder. Below is an example search output.
+
+```html
+<div class="search-results">
+    [[+mediocreQuery:isnot=``:then=`<h1>Searching for "[[+mediocreQuery]]"</h1>`]]
+    [[+mediocreQuery:isnot=``:then=`<h2>Found [[+mediocreResultsCount]] results from [[+mediocreResultsCount]] pages, in [[+mediocreResultsCount]] milliseconds</h2>`]]
+    [[+mediocreResults]]
+</div>
+```
+
 ### Search Form
 
 It is important to call the **mediocreSearch** snippet _before_ a search form is defined.
