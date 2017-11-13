@@ -77,6 +77,9 @@ When the mediocreSearch snippet is ran, a number of placeholders are generated. 
 |-------------|-------------|
 | mediocreResults | Contains the processed output of all search results. |
 | mediocreQuery | Contains the current search query - allows you to retain the search inputs vbalue after a page refresh. |
+| mediocreResultsCount | Contains the number of matched results. |
+| mediocreSearchedCount | Contains the number of resources that were searched. |
+| mediocreQueryTime | Contains the amount of miliseconds taken to complete the search. |
 | mediocrePagination | Contains the generated pagination. |
 
 ### Results
@@ -87,7 +90,7 @@ In addition, the following variables are also parsed to the chunk for use.
 
 | Variable | Type | Description |
 |----------|------|-------------|
-| pagerank | integer | The numeric value calculated be the number of matches the resource received druing search |
+| pagerank | integer | The numeric value calculated be the number of matches the resource received druing search. |
 
 A simple output chunk would be as follows:
 

@@ -321,6 +321,7 @@ function cmp($a, $b)
 $results = fetchData($modx, $array, $parent, $fieldsArray, $searchQuery, $filters);
 
 usort($results, "cmp");
+$modx->setPlaceholder('mediocreResultsCount',count($results));
 
 //Time Taken
 //$end = round(microtime(true) * 1000);
@@ -425,7 +426,9 @@ $end = round(microtime(true) * 1000);
 //echo ('<h2 style="font-size: .75em;">Found '.count($results ).' results from '. $GLOBALS['searchItemCount'].' pages, in '.($end-$start).'milliseconds</h2>');
 
 $modx->setPlaceholder('mediocreResults',$output);
+$modx->setPlaceholder('mediocreSearchedCount',$output);
 $modx->setPlaceholder('mediocreQuery',$searchQuery);
+$modx->setPlaceholder('mediocreQueryTime',($end-$start));
 $modx->setPlaceholder('mediocrePagination',$pagination);
 
 //return $output;
