@@ -23,10 +23,18 @@ Each snippet accepts and requires different paremters to function.
 | parent | string | '1' | Defines a parent resource for the search to search the children of. |
 | fields | string | 'pagetitle,content' | Specifies the fields for the seach terms to match to. Check the **Fields** section below for more info. |
 | filters | JSON string | '{}' | JSON array of hard coded filters for the search to apply to every search regardless of front end search form settings. |
-| sortby | JSON string | '{"pagetitle":"ASC","menuindex":"DESC"}'     | JSON array to order results by, should resources have the same rank after searching. Before a search or filter is supplied, all resources will be assigned rank 1 and will therefore be ordered by this field. |
+| sortby | JSON string | '{"pagetitle":"ASC","menuindex":"DESC"}' | JSON array to order results by, should resources have the same rank after searching. Before a search or filter is supplied, all resources will be assigned rank 1 and will therefore be ordered by this field. |
 | resultTpl | chunk | '' | Defines a template for each search result to follow. Look below at **Output Content** for more details. |
 | includeTVs | string | '1' | Indicates if TemplateVar values should be included in the properties available to each resource template. |
-| includeTVList | string | '' | An optional comma-delimited list of TemplateVar names to include explicitly if includeTVs is 1. |
+| includeTVList | string | '' | An optional comma-delimited list of TemplateVar names to include explicitly if includeTVs is 1. _Using this is recommended to improve performance._ |
+| resultsPerPage | integer | 0 | Defines a number of results to show per page. If set to 0, then _all_ results will be output. _Using this is recommended to improve performance._ |
+| paginationCount | integer | 4 | Specifies a number of pages to show at either side of the current one, within the pagination. |
+| paginationWrapperClass | string | 'pagination' | A class (or classes) to apply to the outer container of the pagination. |
+| paginationPageClass | string | 'page' | A class (or classes) to apply to each pagination page. |
+| paginationCurrentClass | string | 'current' | A class (or classes) to apply to the current pagination page. |
+| paginationNext | string | '>' | Text or mark-up to be contained within the _next_ button within the pagination. |
+| paginationPrev | string | '<' | Text or mark-up to be contained within the _prev_ button within the pagination. |
+
 
 #### Fields
 
@@ -67,8 +75,9 @@ When the mediocreSearch snippet is ran, a number of placeholders are generated. 
 
 | Placeholder | Description |
 |-------------|-------------|
-| mediocreResults |Contains the processed output of all search results. |
-| mediocreQuery |Contains the current search query - allows you to retain the search inputs vbalue after a page refresh. |
+| mediocreResults | Contains the processed output of all search results. |
+| mediocreQuery | Contains the current search query - allows you to retain the search inputs vbalue after a page refresh. |
+| mediocrePagination | Contains the generated pagination. |
 
 ### Results
 

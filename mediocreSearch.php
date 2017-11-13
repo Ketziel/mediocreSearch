@@ -19,6 +19,7 @@ $fields = $modx->getOption('fields', $scriptProperties, 'pagetitle,content');
 $includeTVs = $modx->getOption('includeTVs', $scriptProperties, 1);
 $includeTVList = explode(',',$modx->getOption('includeTVList', $scriptProperties, ''));
 $resultTpl = $modx->getOption('resultTpl', $scriptProperties, '');
+$resultsPerPage = $modx->getOption('resultsPerPage', $scriptProperties, 0);
 $GLOBALS['mediocreSortOrder'] = json_decode($modx->getOption('sortby', $scriptProperties, '{"pagetitle":"ASC","menuindex":"DESC"}'), true);
 $fieldsArray = explode(',',$fields);
 $array = array();
@@ -28,30 +29,30 @@ $GLOBALS['searchItemCount'] = 0;
 /* POST Variables */
 $searchQuery = $_GET['search'];
 $searchQuery = str_replace('+',' ',$_GET['search']);
+if ($_GET['num'] != null){
+    $resultsPerPage = $_GET['num'];
+}
+if ($_GET['page'] != null){
+    $currentPage = $_GET['page'];
+} else {
+    $currentPage = 0;
+}
 $filters = buildFilterArray($filters);
 
-//var_dump($_GET);
-/*
-
-    foreach ($filters as $idx => $filter) {
-
-			$x = array_shift( unpack('H*', $idx) );
-			$y = pack('H*', $x);
-
-			echo $x;
-			echo '<br/>';
-			echo $y;
-			echo '<br/>';
-	}*/
-
-
+/* Pagination*/
+$paginationCount = $modx->getOption('paginationCount', $scriptProperties, 4);
+$paginationWrapperClass = $modx->getOption('paginationWrapperClass', $scriptProperties, 'pagination');
+$paginationPageClass = $modx->getOption('paginationPageClass', $scriptProperties, 'page');
+$paginationCurrentClass = $modx->getOption('paginationCurrentClass', $scriptProperties, 'current');
+$paginationNext = $modx->getOption('paginationNext', $scriptProperties, '>');
+$paginationPrev = $modx->getOption('paginationPrev', $scriptProperties, '<');
 
 function buildFilterArray($filters){
 
 	//template$eq$13,tv.gold$gte$1000
 	$queryArray = $_GET;
 	foreach($queryArray as $query => $val){
-	    if ($query != 'search' && $query != 'q') {
+	    if ($query != 'search' && $query != 'q' && $query != 'num' && $query != 'page') {
     		if(is_array($val) && $query){
     			$strVal = '';
     			foreach($val as $v){
@@ -326,6 +327,65 @@ usort($results, "cmp");
 //echo ('<h1>Searching for : '.$searchQuery.'</h1>');
 //echo ('<h2>Found '.count($results ).' results from '. $GLOBALS['searchItemCount'].' pages, in '.($end-$start).'milliseconds</h2>');
 
+//Trim Results
+$totalPages = 1;
+if ($resultsPerPage > 0 && $resultsPerPage < count($results)){
+    $totalPages = ceil(count($results)/$resultsPerPage);
+    if ($currentPage > $totalPages){
+        $currentPage = $totalPages;
+    }
+    $results = array_slice($results, (($currentPage-1) * $resultsPerPage), $resultsPerPage, true);
+}
+
+//Pagination
+$pagination = '<div class="'.$paginationWrapperClass.'">';
+$fullUrl = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+$visiblePagination["Start"] = $currentPage;
+$visiblePagination["End"] = $currentPage;
+
+for( $i= 1 ; $i <= $paginationCount ; $i++ ) {
+    if($visiblePagination["Start"] != 1){
+        $visiblePagination["Start"]--;
+    }
+    if($visiblePagination["End"] != $totalPages){
+        $visiblePagination["End"]++;
+    }
+}
+
+if ($currentPage > 1) {
+    if (strpos($fullUrl, 'page=') !== false) {
+        $prevUrl = str_replace("page=".$currentPage,"page=".($currentPage-1),$fullUrl); 
+    } else {
+        $prevUrl = $fullUrl."&page=1";
+    }
+    $pagination .= '<span class="'.$paginationPageClass.'"><a href="'.$prevUrl.'">'.$paginationPrev.'</a></span>'; 
+}
+
+for( $i= 1 ; $i <= $totalPages ; $i++ ) {
+    if (strpos($fullUrl, 'page=') !== false) {
+        $numUrl = str_replace("page=".$currentPage,"page=".$i,$fullUrl); 
+    } else {
+        $numUrl = $fullUrl."&page=".$i;
+    }
+    if ($i == 1 || $i == $totalPages || $i >= $visiblePagination["Start"] && $i <= $visiblePagination["End"]){
+        $pagination .= '<span class="'.$paginationPageClass.($i == $currentPage ? ' '.$paginationCurrentClass : '').'"><a href="'.$numUrl.'">'.$i.'</a></span>'; 
+    } elseif ($i == ($visiblePagination["Start"]-1)||$i == ($visiblePagination["End"]+1)){
+        $pagination .= '<span class="'.$paginationPageClass.'"><a href="'.$numUrl.'">...</a></span>'; 
+    }
+    
+}
+
+if ($currentPage < $totalPages) {
+    if (strpos($fullUrl, 'page=') !== false) {
+        $nextUrl = str_replace("page=".$currentPage,"page=".($currentPage+1),$fullUrl); 
+    } else {
+        $nextUrl = $fullUrl."&page=2";
+    }
+    $pagination .= '<span class="'.$paginationPageClass.'"><a href="'.$nextUrl.'">'.$paginationNext.'</a></span>'; 
+    //$pagination .= '<a href="'.str_replace("page=".$currentPage,"page=".($currentPage+1),$fullUrl).'">Next</a>';
+}
+
+$pagination .= '</div>';
 
 //Output
 $output ='';
@@ -362,9 +422,10 @@ foreach ($results as $idx => $item) {
 //Time Taken
 $end = round(microtime(true) * 1000);
 //echo ('<h1>Searching for : '.$searchQuery.'</h1>');
-echo ('<h2 style="font-size: .75em;">Found '.count($results ).' results from '. $GLOBALS['searchItemCount'].' pages, in '.($end-$start).'milliseconds</h2>');
+//echo ('<h2 style="font-size: .75em;">Found '.count($results ).' results from '. $GLOBALS['searchItemCount'].' pages, in '.($end-$start).'milliseconds</h2>');
 
 $modx->setPlaceholder('mediocreResults',$output);
 $modx->setPlaceholder('mediocreQuery',$searchQuery);
+$modx->setPlaceholder('mediocrePagination',$pagination);
 
 //return $output;
