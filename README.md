@@ -18,15 +18,15 @@ Each snippet accepts and requires different paremters to function.
 
 ### mediocreSearch Snippet
 
-| Name                      | Type              | Default  Value  | Description                                                                                                                              |
-| -----------------------|-----------------|-----------------|-----------------------------------------------------------------------------------------------------------------|
-| parent                |string              | '1'     | Defines a parent resource for the search to search the children of.                                  |
-| fields               |String            | 'pagetitle,content'     | Specifies the fields for the seach terms to match to. Check the **Fields** section below for more info.    |
-| filters              |JSON string            | '{}'     | JSON array of hard coded filters for the search to apply to every search regardless of front end search form settings.    |
-| sortby              |JSON string            | '{"pagetitle":"ASC","menuindex":"DESC"}'     | JSON array to order results by, should resources have the same rank after searching. Before a search or filter is supplied, all resources will be assigned rank 1 and will therefore be ordered by this field.     |
-| resultTpl                |chunk            | ''     | Defines a template for each search result to follow. Look below at **Output Content** for more details.   |
-| includeTVs                |string              | '1'     | Indicates if TemplateVar values should be included in the properties available to each resource template                                  |
-| includeTVList                |string              | ''     | An optional comma-delimited list of TemplateVar names to include explicitly if includeTVs is 1                                  |
+| Name | Type | Default  Value | Description |
+|-------|------|-----------------|------------|
+| parent | string | '1' | Defines a parent resource for the search to search the children of. |
+| fields | string | 'pagetitle,content' | Specifies the fields for the seach terms to match to. Check the **Fields** section below for more info. |
+| filters | JSON string | '{}' | JSON array of hard coded filters for the search to apply to every search regardless of front end search form settings. |
+| sortby | JSON string | '{"pagetitle":"ASC","menuindex":"DESC"}'     | JSON array to order results by, should resources have the same rank after searching. Before a search or filter is supplied, all resources will be assigned rank 1 and will therefore be ordered by this field. |
+| resultTpl | chunk | '' | Defines a template for each search result to follow. Look below at **Output Content** for more details. |
+| includeTVs | string | '1' | Indicates if TemplateVar values should be included in the properties available to each resource template. |
+| includeTVList | string | '' | An optional comma-delimited list of TemplateVar names to include explicitly if includeTVs is 1. |
 
 #### Fields
 
@@ -46,7 +46,22 @@ Nested Migx variables are also searchable. To do this, just continue to seperate
 
 ``TV.myMigxVariable>myNestedMigx>myDoubleNestedMigx>myMigxValueTitle``
 
-#### Output Content
+### mediocreFilter
+
+In order to generate filters for users to apply on the front end, the mediocreFilter should be used. The parameters are as follows:
+
+| Name | Type | Default  Value  | Description |
+| -------|------|-----------------|-------------|
+| type | string | 'checkbox' | Defines the type of input to be generated. |
+| classes | string | '' | Specifies the classes to attach to the input. |
+| id | string | '' | Assigns an id to the input. |
+| min/max | string | '' | Sets min/max attribute of input. |
+| label | string | '' | Text for the inputs generated Label. |
+| labelBefore | bool | false | Generates a label before the input element if set to true. |
+| labelAfter | bool | false | Generates a label after the input element if set to true. |
+| condition | JSON string | '' | String specifying the condition the filter should apply. |
+
+## Output
 
 When the mediocreSearch snippet is ran, a number of placeholders are generated. These placeholders can be used to build up the layout of the search page. The following is a list of those placeholders.
 
@@ -55,7 +70,7 @@ When the mediocreSearch snippet is ran, a number of placeholders are generated. 
 | mediocreResults |Contains the processed output of all search results. |
 | mediocreQuery |Contains the current search query - allows you to retain the search inputs vbalue after a page refresh. |
 
-##### Results
+### Results
 
 Chunks are used to create the HTML structure of each returned search result. Any resource option or template variable can be used here. 
 
@@ -74,28 +89,15 @@ A simple output chunk would be as follows:
 </div>
 ```
 
-### mediocreFilter
+### Search Form
 
-In order to generate filters for users to apply on the front end, the mediocreFilter should be used. The parameters are as follows:
-
-| Name                      | Type              | Default  Value  | Description                                                                                                                              |
-| -----------------------|-----------------|-----------------|-----------------------------------------------------------------------------------------------------------------|
-| type                |string              | 'checkbox'     | Defines the type of input to be generated.                                  |
-| classes               |string            | ''     | Specifies the classes to attach to the input.    |
-| id                |string            | ''     | Assigns an id to the input.   |
-| min/max              |string            | ''     | Sets min/max attribute of input. |
-| label              |string            | ''     | Text for the inputs generated Label.     |
-| labelBefore              | bool            | false     | Generates a label before the input element if set to true.     |
-| labelAfter              | bool            | false     | Generates a label after the input element if set to true.     |
-| condition              | JSON string            | ''     | String specifying the condition the filter should apply.     |
-
-## Search Form
+It is important to call the **mediocreSearch** snippet _before_ a search form is defined.
 
 The search form must, at minimum, consist on an text input with the name/id "search" and a submit button. If more inputs are required, use the above snippet call **mediocreFilter** to generate them. 
 
 ```html
 <form id="mediocre-form" onSubmit="">
-  <input name="search" id="search">
+  <input name="search" id="search" value="[[+mediocreQuery]]">
   <fieldset>
       <legend>Filters</legend>
       [[[!mediocreFilter? &condition=`template:==` &value=`7` &label=`Is Template 7` &labelAfter=`true`]]
