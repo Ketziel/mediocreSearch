@@ -101,7 +101,7 @@ A simple output chunk would be as follows:
 </div>
 ```
 
-In order to display these results, you ***must remember*** to output them using the **mediocreResults** placeholder. Below is an example search output.
+***Remember***, in order to display these results, you ***must*** to output them using the **mediocreResults** placeholder. Below is an example search output.
 
 ```html
 <div class="search-results">

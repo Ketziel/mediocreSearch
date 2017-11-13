@@ -338,7 +338,7 @@ for( $i= 1 ; $i <= $paginationCount ; $i++ ) {
     }
 }
 
-if ($currentPage > 1) {
+if ($currentPage > 1 && $totalPages > 2) {
     if (strpos($fullUrl, 'page=') !== false) {
         $prevUrl = str_replace("page=".$currentPage,"page=".($currentPage-1),$fullUrl); 
     } else {
@@ -360,7 +360,7 @@ for( $i= 1 ; $i <= $totalPages ; $i++ ) {
     }
 }
 
-if ($currentPage < $totalPages) {
+if ($currentPage < $totalPages && $totalPages > 2) {
     if (strpos($fullUrl, 'page=') !== false) {
         $nextUrl = str_replace("page=".$currentPage,"page=".($currentPage+1),$fullUrl); 
     } else {
