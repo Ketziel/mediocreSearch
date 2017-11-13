@@ -1,5 +1,8 @@
 <?php
-/* Required Functions */
+/* ==========================================================================
+   Required Functions
+   ========================================================================== */
+
 if (!function_exists('toHex')) {
 	function toHex($str) {
 		return array_shift( unpack('H*', $str) );
@@ -12,7 +15,11 @@ if (!function_exists('toStr')) {
 	}
 }
 
-/* Plugin Settings */
+
+/* ==========================================================================
+   Plugin Settings
+   ========================================================================== */
+   
 $start = round(microtime(true) * 1000);
 $parent = $modx->getOption('parent', $scriptProperties, 1);
 $fields = $modx->getOption('fields', $scriptProperties, 'pagetitle,content');
@@ -29,14 +36,8 @@ $GLOBALS['searchItemCount'] = 0;
 /* POST Variables */
 $searchQuery = $_GET['search'];
 $searchQuery = str_replace('+',' ',$_GET['search']);
-if ($_GET['num'] != null){
-    $resultsPerPage = $_GET['num'];
-}
-if ($_GET['page'] != null){
-    $currentPage = $_GET['page'];
-} else {
-    $currentPage = 0;
-}
+if ($_GET['num'] != null){$resultsPerPage = $_GET['num'];}
+if ($_GET['page'] != null){$currentPage = $_GET['page'];} else {$currentPage = 0;}
 $filters = buildFilterArray($filters);
 
 /* Pagination*/
@@ -47,9 +48,12 @@ $paginationCurrentClass = $modx->getOption('paginationCurrentClass', $scriptProp
 $paginationNext = $modx->getOption('paginationNext', $scriptProperties, '>');
 $paginationPrev = $modx->getOption('paginationPrev', $scriptProperties, '<');
 
-function buildFilterArray($filters){
 
-	//template$eq$13,tv.gold$gte$1000
+/* ==========================================================================
+   Filter Functions
+   ========================================================================== */
+
+function buildFilterArray($filters){
 	$queryArray = $_GET;
 	foreach($queryArray as $query => $val){
 	    if ($query != 'search' && $query != 'q' && $query != 'num' && $query != 'page') {
@@ -69,32 +73,10 @@ function buildFilterArray($filters){
     		}
 	    }
 	}
-	
 	return $filters;
 }
 
-
-
-
-function fetchData($modx, $stack, $parentID, $fields, $search, $filters){
-    $theData = $modx->getIterator('modResource', array('parent' => $parentID,'published' => true));
-    foreach ($theData as $idx => $item) {
-        $GLOBALS['searchItemCount'] = $GLOBALS['searchItemCount'] + 1;
-        if(checkFilters($modx, $item, $filters) == true){
-            $rankedItem = rankResource($modx, $item, $fields, $search);
-            if ($rankedItem!= false){
-                array_push($stack, $rankedItem);
-            }
-        }
-        if(count($modx->getChildIds($item->get('id'),1))>0){
-            $stack = fetchData($modx, $stack, $item->get('id'), $fields, $search, $filters);
-        }
-    }
-    return $stack;
-}
-
-function checkFilters($modx, $obj, $filters){
-    
+function checkFilters($modx, $obj, $filters){    
     $valid = true;
     foreach($filters as $filter => $val){
         if ($valid){
@@ -108,7 +90,6 @@ function checkFilters($modx, $obj, $filters){
 
                 switch ($filter[1]) {
                     case '==':
-                        //$valid = ($field == $val);
 						$valid = checkFilter(function ($f, $v) {return ($f == $v);}, $field,$val);
                         break;
                     case '>':
@@ -135,13 +116,10 @@ function checkFilters($modx, $obj, $filters){
         }
         
     }
-    
-    //echo $obj->get('template').'<br/>';
     return $valid;
 }
 
-function checkFilter($compare, $field, $val){
-						
+function checkFilter($compare, $field, $val){						
 	if (stripos($val,',') !== false){
 		$match = 0;
 		$valArr = explode(',',(string)$val);
@@ -167,8 +145,11 @@ function checkFilter($compare, $field, $val){
 	}
 }
 
+/* ==========================================================================
+   Resource Ranking
+   ========================================================================== */
+
 function rankResource($modx, $obj, $fields, $query){
-	
 	if ($query == ''){
 		$rank = 1;
 	} else {
@@ -176,14 +157,12 @@ function rankResource($modx, $obj, $fields, $query){
 		$fieldsSize = count($fields);
 		$queryArray = explode(' ',$query);
 		foreach ($fields as $idx => $field) {
-		   if($field != '' && $field != ' ' && $field != null){
-				
+		   if($field != '' && $field != ' ' && $field != null){				
 				$outputFilter = '';
 				if (strpos($field, ':') !== false) {
 				   $temp = explode(':',$field);
 				   $field = $temp[0];
 				   $outputFilter  = $temp[1];
-				 //  echo $field.':'.$outputFilter.'<br/>';
 				}
 			   
 				if(substr($field, 0, 3) == 'TV.'){
@@ -205,7 +184,6 @@ function rankResource($modx, $obj, $fields, $query){
 					$focusField = $modx->runSnippet($outputFilter,array(
 					   'input' => $focusField
 					));
-					//echo $field.':'.$outputFilter.'<br/>';
 				}
 				
 				$fieldIdx = $idx;
@@ -231,21 +209,11 @@ function rankResource($modx, $obj, $fields, $query){
 						}
 					}
 			   }
-			   
-			   
-			   
-			   
-			   
-			   
 		   }
-
 		}
-		
 	}
 	
-
     if($rank > 0){
-//echo $focusField.':'.$rank.'<br/>';
         $obj->set('pagerank',$rank);
         return $obj;
     } else {
@@ -271,12 +239,9 @@ function migxString($modx, $json, $f, $depth, $focusField = ''){
 function doublePoints($field, $text){
     $stringPosStart = stripos($field, $text);
     $stringPosEnd = stripos($field, $text) + strlen($text) - 1;
-/*    $startChar = substr($field,$stringPosStart, 1);
-    $endChar = substr($field,$stringPosEnd, 1);*/
     $leftChar = substr($field,$stringPosStart - 1, 1);
     $rightChar = substr($field,$stringPosEnd + 1, 1);
 
-//if (($leftChar=='' || $leftChar==' ') && ($rightChar==' ' || $rightChar=='')){
     if (ctype_alpha($leftChar)==false && ctype_alpha($rightChar)==false){
         return true;
     } else {
@@ -284,10 +249,13 @@ function doublePoints($field, $text){
     }
 }
 
-//sort function
+
+/* ==========================================================================
+   Sort Function
+   ========================================================================== */
+
 function cmp($a, $b)
 {
-
     $aRank = $a->get('pagerank');
     $bRank = $b->get('pagerank');
     if ($aRank == $bRank) {
@@ -316,19 +284,37 @@ function cmp($a, $b)
     return ($aRank > $bRank) ? -1 : 1;
 }
 
+/* ==========================================================================
+   Search
+   ========================================================================== */
 
-//run search
+function fetchData($modx, $stack, $parentID, $fields, $search, $filters){
+    $theData = $modx->getIterator('modResource', array('parent' => $parentID,'published' => true));
+    foreach ($theData as $idx => $item) {
+        $GLOBALS['searchItemCount'] = $GLOBALS['searchItemCount'] + 1;
+        if(checkFilters($modx, $item, $filters) == true){
+            $rankedItem = rankResource($modx, $item, $fields, $search);
+            if ($rankedItem!= false){
+                array_push($stack, $rankedItem);
+            }
+        }
+        if(count($modx->getChildIds($item->get('id'),1))>0){
+            $stack = fetchData($modx, $stack, $item->get('id'), $fields, $search, $filters);
+        }
+    }
+    return $stack;
+}
+
+/* Run Search */
 $results = fetchData($modx, $array, $parent, $fieldsArray, $searchQuery, $filters);
-
 usort($results, "cmp");
 $modx->setPlaceholder('mediocreResultsCount',count($results));
 
-//Time Taken
-//$end = round(microtime(true) * 1000);
-//echo ('<h1>Searching for : '.$searchQuery.'</h1>');
-//echo ('<h2>Found '.count($results ).' results from '. $GLOBALS['searchItemCount'].' pages, in '.($end-$start).'milliseconds</h2>');
 
-//Trim Results
+/* ==========================================================================
+   Pagination
+   ========================================================================== */
+   
 $totalPages = 1;
 if ($resultsPerPage > 0 && $resultsPerPage < count($results)){
     $totalPages = ceil(count($results)/$resultsPerPage);
@@ -338,7 +324,6 @@ if ($resultsPerPage > 0 && $resultsPerPage < count($results)){
     $results = array_slice($results, (($currentPage-1) * $resultsPerPage), $resultsPerPage, true);
 }
 
-//Pagination
 $pagination = '<div class="'.$paginationWrapperClass.'">';
 $fullUrl = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 $visiblePagination["Start"] = $currentPage;
@@ -373,7 +358,6 @@ for( $i= 1 ; $i <= $totalPages ; $i++ ) {
     } elseif ($i == ($visiblePagination["Start"]-1)||$i == ($visiblePagination["End"]+1)){
         $pagination .= '<span class="'.$paginationPageClass.'"><a href="'.$numUrl.'">...</a></span>'; 
     }
-    
 }
 
 if ($currentPage < $totalPages) {
@@ -383,21 +367,21 @@ if ($currentPage < $totalPages) {
         $nextUrl = $fullUrl."&page=2";
     }
     $pagination .= '<span class="'.$paginationPageClass.'"><a href="'.$nextUrl.'">'.$paginationNext.'</a></span>'; 
-    //$pagination .= '<a href="'.str_replace("page=".$currentPage,"page=".($currentPage+1),$fullUrl).'">Next</a>';
 }
 
 $pagination .= '</div>';
 
-//Output
+
+/* ==========================================================================
+   Results Output
+   ========================================================================== */
+   
 $output ='';
 foreach ($results as $idx => $item) {
     if ($includeTVs == 1){
-        //$output = $output.'<h1>'.count($includeTVList).' : '.$includeTVList[0].'</h1>';
         if(count($includeTVList) != 1 && $includeTVList[0] != ''){
-            //$test = (string)$item->getTVValue("productType");
             foreach ($includeTVList as $tvName) {
                 $tvs[$tvName] = (string)$item->getTVValue($tvName);
-                //$output = $output."<br/><div>".$item->getTVValue($tvName)."</div><br/><br/>";
             }
         } else {
             $templateVars =& $item->getMany('TemplateVars');
@@ -408,27 +392,18 @@ foreach ($results as $idx => $item) {
     } else {
         $tvs['noTV'] = "none";    
     }
-    //    $tvs['productType'] = "*144*";    
-    
-	
-
-    
 	$output = $output.$modx->getChunk($resultTpl, array_merge($item->toArray(),$tvs));
-	//$output = $output."<h2>".$item->toArray()['pagetitle']."</h2>";
-	//$output = $output.$modx->getChunk($resultTpl, array_merge($item->toArray(),new Array()));
-
 }
 
 
-//Time Taken
+/* ==========================================================================
+   Placeholders
+   ========================================================================== */
+   
 $end = round(microtime(true) * 1000);
-//echo ('<h1>Searching for : '.$searchQuery.'</h1>');
-//echo ('<h2 style="font-size: .75em;">Found '.count($results ).' results from '. $GLOBALS['searchItemCount'].' pages, in '.($end-$start).'milliseconds</h2>');
 
 $modx->setPlaceholder('mediocreResults',$output);
 $modx->setPlaceholder('mediocreSearchedCount',$output);
 $modx->setPlaceholder('mediocreQuery',$searchQuery);
 $modx->setPlaceholder('mediocreQueryTime',($end-$start));
 $modx->setPlaceholder('mediocrePagination',$pagination);
-
-//return $output;
