@@ -37,7 +37,7 @@ $GLOBALS['searchItemCount'] = 0;
 $searchQuery = $_GET['search'];
 $searchQuery = str_replace('+',' ',$_GET['search']);
 if ($_GET['num'] != null){$resultsPerPage = $_GET['num'];}
-if ($_GET['page'] != null){$currentPage = $_GET['page'];} else {$currentPage = 0;}
+if ($_GET['page'] != null){$currentPage = $_GET['page'];} else {$currentPage = 1;}
 $filters = buildFilterArray($filters);
 
 /* Pagination*/
@@ -403,7 +403,7 @@ foreach ($results as $idx => $item) {
 $end = round(microtime(true) * 1000);
 
 $modx->setPlaceholder('mediocreResults',$output);
-$modx->setPlaceholder('mediocreSearchedCount',$totalPages);
+$modx->setPlaceholder('mediocreSearchedCount',$GLOBALS['searchItemCount']);
 $modx->setPlaceholder('mediocreQuery',$searchQuery);
 $modx->setPlaceholder('mediocreQueryTime',($end-$start));
 $modx->setPlaceholder('mediocrePagination',$pagination);
