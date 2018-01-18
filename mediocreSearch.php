@@ -403,7 +403,7 @@ foreach ($results as $idx => $item) {
 $end = round(microtime(true) * 1000);
 
 $modx->setPlaceholder('mediocreResults',$output);
-$modx->setPlaceholder('mediocreSearchedCount',$output);
+$modx->setPlaceholder('mediocreSearchedCount',$totalPages);
 $modx->setPlaceholder('mediocreQuery',$searchQuery);
 $modx->setPlaceholder('mediocreQueryTime',($end-$start));
 $modx->setPlaceholder('mediocrePagination',$pagination);
